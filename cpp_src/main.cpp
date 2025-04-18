@@ -56,7 +56,7 @@ This is the end of the test document.
 
     // Initialize the chunker and load text
     MarkdownChunker chunker;
-    chunker.setText("# Title\nSome content...");
+    chunker.setText(markdown_text);
     chunker.printBreakpoints();
 
     std::cout << "\nCreating chunks with maximum 100 tokens per chunk using member function...\n";

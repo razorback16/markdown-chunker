@@ -1,5 +1,5 @@
 def main():
-    print("Hello from markdown-break!")
+    print("Hello from markdown-chunker!")
 
 
 if __name__ == "__main__":

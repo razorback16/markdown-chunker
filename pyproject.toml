@@ -1,5 +1,5 @@
 [project]
-name = "markdown-break"
+name = "markdown-chunker"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -18,7 +18,7 @@ classifiers = [
 keywords = ["markdown", "chunking", "pybind11"]
 
 [project.scripts]
-markdown-break = "markdown_break.cli:main"
+markdown-chunker = "markdown_chunker.cli:main"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]

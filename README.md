@@ -1,4 +1,4 @@
-# Markdown Break
+# markdown-chunker
 
 A Python package (with a C++ pybind11 extension) for breaking Markdown text into semantic chunks based on headers, code blocks, and other breakpoints.
 
@@ -12,14 +12,14 @@ A Python package (with a C++ pybind11 extension) for breaking Markdown text into
 ## Installation
 
 ```bash
-pip install markdown-break
+pip install markdown-chunker
 ```
 
 Or install from source:
 
 ```bash
-git clone https://github.com/yourusername/markdown-break.git
-cd markdown-break
+git clone https://github.com/yourusername/markdown-chunker.git
+cd markdown-chunker
 pip install .
 ```
 
@@ -28,7 +28,7 @@ pip install .
 ### Python API
 
 ```python
-from markdown_break import MarkdownChunker
+from markdown_chunker import MarkdownChunker
 
 text = "# Title\nSome content..."
 chunker = MarkdownChunker()
@@ -40,7 +40,7 @@ print(chunks)
 ### Command Line
 
 ```bash
-markdown-break input.md --max-tokens 200 > output_chunks.json
+markdown-chunker input.md --max-tokens 200 > output_chunks.json
 ```
 
 ## Development

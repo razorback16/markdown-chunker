@@ -9,33 +9,33 @@ with io.open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf
 
 ext_modules = [
     Extension(
-        'markdown_break._chunker',
+        'markdown_chunker._chunker',
         sources=[
-            'py_markdown_chunker.cpp',
-            'markdown_chunker.cpp',
+            'cpp_src/py_markdown_chunker.cpp',
+            'cpp_src/markdown_chunker.cpp',
         ],
-        include_dirs=[pybind11.get_include()],
+        include_dirs=[pybind11.get_include(), 'cpp_src'],
         language='c++',
-        extra_compile_args=['-std=c++17'],
+        extra_compile_args=['-std=c++14', '-O3'],
     ),
 ]
 
 setup(
-    name='markdown-break',
+    name='markdown-chunker',
     version='0.1.0',
-    author='Your Name',
-    author_email='you@example.com',
+    author='Razorback16',
+    author_email='razorback16@protonmail.com',
     description='Break markdown text into semantic chunks via C++ extension',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/yourusername/markdown-break',
+    url='https://github.com/razorback16/markdown-chunker',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     ext_modules=ext_modules,
     python_requires='>=3.10',
     install_requires=['pybind11>=2.13.6'],
     extras_require={'test': ['pytest', 'pytest-cov']},
-    entry_points={'console_scripts': ['markdown-break=markdown_break.cli:main']},
+    entry_points={'console_scripts': ['markdown-chunker=markdown_chunker.cli:main']},
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.10',
@@ -43,4 +43,5 @@ setup(
         'Operating System :: OS Independent',
     ],
     zip_safe=False,
+    keywords=['markdown', 'chunker', 'semantic chunking', 'C++', 'extension', 'pybind11'],
 )
