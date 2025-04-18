@@ -1,0 +1,14 @@
+[build-system]
+requires = ["uv", "pybind11>=2.13.6"]
+build-backend = "uv.virtualenv.build"
+
+[project]
+name = "markdown-break"
+version = "0.1.0"
+description = "A tool to break markdown text into semantic chunks"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
+
+[tool.uv]
+compile = true

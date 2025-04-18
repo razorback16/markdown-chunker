@@ -54,8 +54,6 @@ function calculateSum(a, b) {
 This is the end of the test document.
 )md";
 
-    std::cout << "Markdown text length: " << markdown_text.size() << " characters\n";
-
     // Initialize the chunker and load text
     MarkdownChunker chunker;
     chunker.setText(markdown_text);
