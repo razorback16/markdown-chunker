@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(markdown_chunker_py, m) {
+PYBIND11_MODULE(_chunker, m) {
     m.doc() = R"pbdoc(
         Python bindings for MarkdownChunker C++ library
         

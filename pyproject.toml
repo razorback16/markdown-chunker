@@ -1,14 +1,29 @@
-[build-system]
-requires = ["uv", "pybind11>=2.13.6"]
-build-backend = "uv.virtualenv.build"
-
 [project]
 name = "markdown-break"
 version = "0.1.0"
-description = "A tool to break markdown text into semantic chunks"
+description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.8"
-dependencies = []
+requires-python = ">=3.10"
+dependencies = [
+    "pybind11>=2.13.6",
+]
 
-[tool.uv]
-compile = true
+# Package metadata for PyPI
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["markdown", "chunking", "pybind11"]
+
+[project.scripts]
+markdown-break = "markdown_break.cli:main"
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-cov"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "pybind11>=2.13.6"]
+build-backend = "setuptools.build_meta"
+

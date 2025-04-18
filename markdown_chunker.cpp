@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <deque>
 #include <limits>
+#include <functional>
 
 #define PENALTY 15
 
@@ -102,12 +103,18 @@ static bool compareBps(const Breakpoint& a, const Breakpoint& b) {
 
 static std::vector<Breakpoint> findAllBreakpoints(const std::string& text) {
     std::vector<Breakpoint> bps;
-    findSpace(text, bps);
+
+    bps.push_back({0, 0, "start_of_text"});
+
     findHeadings(text, bps);
     findCodeBlockBoundary(text, bps);
     findParagraphBreaks(text, bps);
     findNewlines(text, bps);
     findSentenceEnds(text, bps);
+    findSpace(text, bps);
+
+    bps.push_back({text.size(), 0, "end_of_text"});
+
     std::sort(bps.begin(), bps.end(), compareBps);
     std::vector<Breakpoint> uniqueBps;
     for (const auto& bp : bps) {

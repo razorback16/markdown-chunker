@@ -3,3 +3,9 @@
 *.dSYM/
 markdown_chunker
 test_generator
+*.pyc
+__pycache__/
+*.so
+*.egg-info/
+output_chunks.json
+*.lock
