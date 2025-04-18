@@ -1,7 +1,8 @@
 .DS_Store
 *.o
 *.dSYM/
-markdown_chunker
+.vscode/
+.venv
 test_generator
 *.pyc
 __pycache__/

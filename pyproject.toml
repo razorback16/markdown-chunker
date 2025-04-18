@@ -1,7 +1,7 @@
 [project]
 name = "markdown-chunker"
 version = "0.1.0"
-description = "Add your description here"
+description = "Break markdown text into semantic chunks via C++ extension"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
