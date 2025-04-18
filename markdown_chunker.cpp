@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 #include <iomanip>
+#include <deque>
+#include <limits>
+
+#define PENALTY 15
 
 
 static bool isStartOfLine(const std::string& text, std::size_t pos) {
@@ -64,7 +68,25 @@ static void findParagraphBreaks(const std::string& text, std::vector<Breakpoint>
 static void findNewlines(const std::string& text, std::vector<Breakpoint>& bps) {
     for (std::size_t i = 0; i < text.size(); ++i) {
         if (text[i] == '\n') {
-            bps.push_back({i + 1, 9, "newline"});
+            bps.push_back({i + 1, 10, "newline"});
+        }
+    }
+}
+
+static void findSpace(const std::string& text, std::vector<Breakpoint>& bps) {
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        if (text[i] == ' ') {
+            bps.push_back({i + 1, 12, "space"});
+        }
+    }
+}
+
+static void findSentenceEnds(const std::string& text, std::vector<Breakpoint>& bps) {
+    std::size_t len = text.size();
+    for (std::size_t i = 0; i + 1 < len; ++i) {
+        if ((text[i] == '.' || text[i] == '?' || text[i] == ';' || text[i] == '!')
+            && text[i + 1] == ' ') {
+            bps.push_back({i + 2, 10, "sentence_end"});
         }
     }
 }
@@ -80,10 +102,12 @@ static bool compareBps(const Breakpoint& a, const Breakpoint& b) {
 
 static std::vector<Breakpoint> findAllBreakpoints(const std::string& text) {
     std::vector<Breakpoint> bps;
+    findSpace(text, bps);
     findHeadings(text, bps);
     findCodeBlockBoundary(text, bps);
     findParagraphBreaks(text, bps);
     findNewlines(text, bps);
+    findSentenceEnds(text, bps);
     std::sort(bps.begin(), bps.end(), compareBps);
     std::vector<Breakpoint> uniqueBps;
     for (const auto& bp : bps) {
@@ -94,6 +118,9 @@ static std::vector<Breakpoint> findAllBreakpoints(const std::string& text) {
     return uniqueBps;
 }
 
+#include <deque>
+#include <limits>
+
 void MarkdownChunker::createChunks(
     const std::string& text,
     const std::vector<Breakpoint>& breakpoints,
@@ -101,37 +128,74 @@ void MarkdownChunker::createChunks(
     std::function<void(const std::string&, std::size_t, std::size_t)> printChunk
 ) {
     if (text.empty() || breakpoints.empty()) return;
-    std::size_t textLen = text.size();
-    std::size_t chunkStart = 0;
-    std::size_t lastValid = 0;
-    while (chunkStart < textLen) {
-        std::size_t bestBreak = textLen;
-        bool found = false;
-        for (const auto& bp : breakpoints) {
-            if (bp.offset <= chunkStart) continue;
-            std::size_t segLen = bp.offset - chunkStart;
-            int tokens = estimateTokens(segLen);
-            if (tokens <= maxTokens) {
-                bestBreak = bp.offset;
-                found = true;
-                lastValid = bp.offset;
-            } else if (found) {
-                break;
-            } else {
-                bestBreak = bp.offset;
-                found = true;
-            }
+    std::size_t N = breakpoints.size();
+
+    // dp[i]: min total cost to reach breakpoint i
+    // prev[i]: best predecessor index for i
+    std::vector<int> dp(N, std::numeric_limits<int>::max());
+    std::vector<int> prev(N, -1);
+
+    // Monotonic deque of candidate indices j.
+    // Invariant: dp[dq.front()] is minimal among all j in window.
+    std::deque<std::size_t> dq;
+
+    // Base case: start at breakpoints[0]
+    dp[0] = 0;
+    dq.push_back(0);
+
+    // Build dp[1..N-1]
+    for (std::size_t i = 1; i < N; ++i) {
+        // 1) Evict any j that would exceed maxTokens if we chunk [j..i]
+        while (!dq.empty()) {
+            std::size_t j = dq.front();
+            int needed = estimateTokens(
+                breakpoints[i].offset - breakpoints[j].offset
+            );
+            if (needed <= maxTokens) break;
+            dq.pop_front();
         }
-        if (!found) {
-            if (lastValid > chunkStart) {
-                bestBreak = lastValid;
-            } else {
-                bestBreak = std::min(chunkStart + std::size_t(100), textLen);
-            }
+
+        if (dq.empty()) {
+            // fallback: break at i-1
+            std::size_t j = i - 1;
+            dp[i]     = dp[j] + breakpoints[i].priority + PENALTY;
+            prev[i]   = static_cast<int>(j);
+        
+            // re‑prime the deque so future i's can use this forced break
+            dq.clear();
+            dq.push_back(i);
+            continue;
         }
-        std::size_t size = bestBreak - chunkStart;
-        printChunk(text.substr(chunkStart, size), chunkStart, size);
-        chunkStart = bestBreak;
+
+        // 2) Transition from the best j = dq.front()
+        std::size_t bestJ = dq.front();
+        dp[i] = dp[bestJ] + breakpoints[i].priority;
+        prev[i] = static_cast<int>(bestJ);
+
+        // 3) Insert i into dq, popping any worse-or-equal dp’s from the back
+        while (!dq.empty() && dp[i] <= dp[dq.back()]) {
+            dq.pop_back();
+        }
+        dq.push_back(i);
+    }
+
+    // Reconstruct the optimal path of breakpoints
+    std::vector<std::size_t> path;
+    for (int cur = static_cast<int>(N) - 1; cur >= 0; cur = prev[cur]) {
+        path.push_back(cur);
+        if (cur == 0) break;
+    }
+    std::reverse(path.begin(), path.end());
+
+    // Emit chunks
+    for (std::size_t k = 0; k + 1 < path.size(); ++k) {
+        std::size_t startOff = breakpoints[path[k]].offset;
+        std::size_t endOff   = breakpoints[path[k+1]].offset;
+        printChunk(
+            text.substr(startOff, endOff - startOff),
+            startOff,
+            endOff - startOff
+        );
     }
 }
 
